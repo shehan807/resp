@@ -1,0 +1,29 @@
+Electrostatic potential parameters
+
+Grid information (see 1_default_grid.dat in Bohr)
+    Number of grid points:            444
+
+Quantum electrostatic potential (see 1_default_grid_esp.dat)
+
+Constraints
+    Equality constraints
+        Equal charges on atoms
+                                  4   5
+
+Restraint
+    Hyperbolic restraint to a charge of zero
+    Hydrogen atoms are not restrained
+    resp_a:                           0.0010
+    resp_b:                           0.1000
+
+Fit
+
+Electrostatic Potential Charges
+   Center  Symbol       ESP      RESP
+      1    O      -0.63785329 -0.58011806
+      2    N      -0.97691216 -0.70945461
+      3    H      -0.00210358  0.05912639
+      4    H       0.44014089  0.35758843
+      5    H       0.44014089  0.35758843
+      6    C       0.73658726  0.51526942
+Total Charge:      0.00000000  0.00000000

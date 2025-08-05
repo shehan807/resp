@@ -1,0 +1,71 @@
+import psi4
+import resp
+from resp.utils import compare_grid_esp, create_difference_esp, grid_to_mol2
+
+mol = psi4.geometry(""" 
+ N   6.27981210  -4.25303372   0.19313865
+ N   6.06870777  -2.28125697   1.80544317
+ H   3.66871156  -5.64628941  -1.96684001
+ H   0.69034521  -2.37545694  -0.42864236
+ H   3.35917442   0.17650601   3.09265017
+ H   7.35266782  -1.99461311   2.90680702
+ C   3.77952586  -1.21508453   1.76858172
+ C   2.38242998  -2.55505538   0.04607681
+ C   4.01771468  -4.38410490  -0.88761863
+units bohr
+""")
+
+mol.update_geometry()
+
+options = {'VDW_SCALE_FACTORS'  : [1.4, 1.6, 1.8, 2.0],
+           'VDW_POINT_DENSITY'  : 1.0,
+           'RESP_A'             : 0.0005,
+           'RESP_B'             : 0.1,
+	   'METHOD_ESP'         : 'hf', 
+	   'BASIS_ESP'          : 'aug-cc-pvdz', 
+           }
+
+# MPFIT-generated charges 
+charges = [-0.39242, -0.02616, 0.10538, 0.13998, 0.12150, 0.25454, 0.00422, -0.30743, 0.10040]
+
+# (as a test) RESP-generated charges
+#charges = [-0.67621058, 0.09036591, 0.09036591, 0.09036591, 0.1696633, 0.29446707, -0.12723959, -0.27854833, 0.3467704]
+
+# (as a test) ESP-generated charges
+#charges = [-0.51241923, -0.01963482, 0.11270785, 0.19172582, 0.16623251, 0.29778778, -0.09928506, -0.35601807, 0.21890322]
+
+# Generate ESP grid files from charges
+resp.charges_to_esp(mol, charges, options)
+
+print(f"Generated grid files:")
+print(f"  1_{mol.name()}_grid.dat")
+print(f"  1_{mol.name()}_grid_esp.dat")
+
+# Compare with RESP-generated ESP
+print("\nComparing MPFIT-generated ESP with RESP-generated ESP...")
+resp_esp = "../resp/1_default_grid_esp.dat"
+mpfit_esp = "1_default_grid_esp.dat"
+
+try:
+    metrics = compare_grid_esp(resp_esp, mpfit_esp, verbose=True)
+    
+    # Create difference ESP file
+    print("\nCreating difference ESP file...")
+    create_difference_esp(resp_esp, mpfit_esp, output_file='difference_grid_esp.dat')
+    
+    # Convert to MOL2 format for visualization
+    print("\nConverting to MOL2 format...")
+    grid_to_mol2(grid_file='1_default_grid.dat', 
+                 esp_file='1_default_grid_esp.dat',
+                 output_mol2='mpfit_esp.mol2',
+                 normalize=False)
+    
+    # Also create MOL2 for the difference
+    print("\nCreating MOL2 for difference ESP...")
+    grid_to_mol2(grid_file='1_default_grid.dat',
+                 esp_file='difference_grid_esp.dat', 
+                 output_mol2='difference_esp.mol2',
+                 normalize=False)
+    
+except Exception as e:
+    print(f"Error during comparison: {e}")

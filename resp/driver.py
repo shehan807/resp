@@ -295,8 +295,13 @@ def charges_to_esp(molecule, charges, options=None):
     for i in range(len(points)):
         for j in range(len(coordinates)):
             distance = np.linalg.norm(points[i] - coordinates[j])
-            # Convert to atomic units: ESP (a.u.) = charge * (1/r_angstrom) * bohr_to_angstrom
-            esp_values[i] += charges[j] / distance * bohr_to_angstrom
+            # Convert to atomic units based on molecule's coordinate units
+            if molecule.units() == 'Angstrom':
+                # Distance is in Angstroms, convert to atomic units (match main resp() function)
+                esp_values[i] += charges[j] * bohr_to_angstrom / distance
+            else:
+                # Distance already in Bohr (atomic units)
+                esp_values[i] += charges[j] / distance
     
     # Save ESP file
     np.savetxt('grid_esp.dat', esp_values, fmt='%15.10f')
